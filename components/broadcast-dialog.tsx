@@ -94,6 +94,7 @@ export function BroadcastDialog({
       const tick = c === "mosque_loudspeaker" ? 700 : 250
       return setInterval(() => {
         setProgress((prev) => {
+          if (prev[c] >= total) return prev
           const next = Math.min(prev[c] + step, total)
           return { ...prev, [c]: next }
         })
