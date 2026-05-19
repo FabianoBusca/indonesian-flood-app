@@ -18,6 +18,7 @@ import {
   CloudRain,
   Gauge,
   MessageSquare,
+  Footprints,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -29,6 +30,13 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { WhatsAppMonitor } from "@/components/whatsapp-monitor"
 import { AlertsView } from "@/components/alerts-view"
+import { HouseholdList } from "@/components/household-list"
+import { BPBDAlertBanner } from "@/components/bpbd-alert"
+import { BroadcastDialog } from "@/components/broadcast-dialog"
+import { ResponseTracker } from "@/components/response-tracker"
+import { RoutePlanner } from "@/components/route-planner"
+import { useSimulation } from "@/hooks/use-simulation"
+import { getNonResponsive, getStatusCounts, mockBPBDAlert } from "@/lib/mock-data"
 
 const languages = [
   { code: "en", label: "English" },
@@ -37,34 +45,33 @@ const languages = [
 ]
 
 type ConnectionStatus = "online" | "limited" | "offline"
-
-interface HouseholdStats {
-  safe: number
-  evacuating: number
-  needsHelp: number
-  noResponse: number
-}
+type Screen = "main" | "households" | "route"
 
 export function FloodApp() {
   const [language, setLanguage] = useState("en")
   const [activeTab, setActiveTab] = useState("home")
   const [connectionStatus] = useState<ConnectionStatus>("online")
+  const [screen, setScreen] = useState<Screen>("main")
+  const [alertOpen, setAlertOpen] = useState(false)
+  const [broadcastOpen, setBroadcastOpen] = useState(false)
+  const [broadcastSent, setBroadcastSent] = useState(false)
 
   const currentLanguage = languages.find((l) => l.code === language)
 
-  // Mock data for the dashboard
-  const alertLevel = "WARNING" // NORMAL, WATCH, WARNING, DANGER
-  const affectedHouseholds = 47
-  const totalHouseholds = 156
-  const waterLevel = 2.3 // meters
-  const rainfallRisk = "High"
+  const simulation = useSimulation({
+    tickMs: 1500,
+    responseProbability: 0.22,
+    nonResponsiveTimeoutMs: 60_000,
+  })
 
-  const householdStats: HouseholdStats = {
-    safe: 89,
-    evacuating: 12,
-    needsHelp: 8,
-    noResponse: 47,
-  }
+  const households = simulation.households
+  const counts = getStatusCounts(households)
+  const totalHouseholds = households.length
+  const affectedHouseholds = totalHouseholds - counts.safe
+
+  const alertLevel = broadcastSent ? "WARNING" : "WARNING"
+  const waterLevel = mockBPBDAlert.predictedFloodLevel
+  const rainfallRisk = "High"
 
   const getAlertColor = (level: string) => {
     switch (level) {
@@ -84,14 +91,31 @@ export function FloodApp() {
     }
   }
 
+  const handleBroadcastClick = () => {
+    if (broadcastSent) {
+      setBroadcastOpen(true)
+    } else {
+      setAlertOpen(true)
+    }
+  }
+
+  const handleReviewAlert = () => {
+    setAlertOpen(false)
+    setBroadcastOpen(true)
+  }
+
+  const handleBroadcastComplete = () => {
+    setBroadcastSent(true)
+    simulation.start()
+  }
+
   const ConnectionIndicator = () => {
     const config = {
       online: { icon: Wifi, color: "text-green-600", bg: "bg-green-100", label: "Online" },
       limited: { icon: Wifi, color: "text-yellow-600", bg: "bg-yellow-100", label: "Limited" },
       offline: { icon: WifiOff, color: "text-red-600", bg: "bg-red-100", label: "Offline" },
     }
-    const { icon: Icon, color, bg, label } = config[connectionStatus]
-    
+    const { icon: Icon, color, bg } = config[connectionStatus]
     return (
       <div className={`flex items-center justify-center rounded-full p-1.5 ${bg}`}>
         <Icon className={`h-3.5 w-3.5 ${color}`} />
@@ -100,8 +124,8 @@ export function FloodApp() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-background">
-      {/* Status Bar - Android style */}
+    <div className="relative flex h-full flex-col bg-background">
+      {/* Status Bar */}
       <div className="flex items-center justify-between bg-primary px-4 py-1.5">
         <span className="text-xs text-primary-foreground/80">9:41</span>
         <div className="flex items-center gap-2">
@@ -127,14 +151,14 @@ export function FloodApp() {
               <p className="text-[10px] text-primary-foreground/70">Citeureup Village</p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <ConnectionIndicator />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="h-7 gap-1 px-2 text-xs text-primary-foreground hover:bg-primary-foreground/20"
                 >
                   <Globe className="h-3.5 w-3.5" />
@@ -170,115 +194,178 @@ export function FloodApp() {
         </main>
       )}
       {(activeTab === "home" || activeTab === "offline" || activeTab === "settings") && (
-      <main className="flex-1 space-y-3 overflow-y-auto p-3">
-        {/* Alert Status Banner */}
-        <Card className={`border-0 ${getAlertColor(alertLevel)}`}>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/20">
-                <AlertTriangle className="h-7 w-7 text-white" />
-              </div>
-              <div className="flex-1">
-                <p className="text-lg font-bold text-white">{getAlertText(alertLevel)}</p>
-                <p className="text-sm text-white/80">Last updated: 5 min ago</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <>
+          {screen === "households" && (
+            <main className="flex-1 overflow-hidden">
+              <HouseholdList
+                households={households}
+                onBack={() => setScreen("main")}
+                highlightNonResponsive={simulation.timedOut}
+              />
+            </main>
+          )}
 
-        {/* Risk Summary */}
-        <div className="grid grid-cols-2 gap-2">
-          <Card className="border-border">
-            <CardContent className="p-3">
-              <div className="flex items-center gap-2">
-                <Gauge className="h-5 w-5 text-primary" />
-                <span className="text-xs text-muted-foreground">Water Level</span>
-              </div>
-              <p className="mt-1 text-xl font-bold text-foreground">{waterLevel}m</p>
-              <p className="text-xs text-orange-600">Above normal</p>
-            </CardContent>
-          </Card>
-          <Card className="border-border">
-            <CardContent className="p-3">
-              <div className="flex items-center gap-2">
-                <CloudRain className="h-5 w-5 text-primary" />
-                <span className="text-xs text-muted-foreground">Rainfall Risk</span>
-              </div>
-              <p className="mt-1 text-xl font-bold text-foreground">{rainfallRisk}</p>
-              <p className="text-xs text-orange-600">Heavy rain expected</p>
-            </CardContent>
-          </Card>
-        </div>
+          {screen === "route" && (
+            <main className="flex-1 overflow-hidden">
+              <RoutePlanner
+                households={getNonResponsive(households)}
+                onBack={() => setScreen("main")}
+              />
+            </main>
+          )}
 
-        {/* Affected Households */}
-        <Card className="border-border">
-          <CardContent className="p-3">
-            <div className="mb-3 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-primary" />
-                <span className="text-sm font-semibold text-foreground">Household Status</span>
-              </div>
-              <span className="text-xs text-muted-foreground">{affectedHouseholds}/{totalHouseholds} affected</span>
-            </div>
-            
-            <div className="grid grid-cols-4 gap-2">
-              <div className="rounded-lg bg-green-50 p-2 text-center">
-                <p className="text-lg font-bold text-green-700">{householdStats.safe}</p>
-                <p className="text-[10px] font-medium text-green-600">SAFE</p>
-              </div>
-              <div className="rounded-lg bg-yellow-50 p-2 text-center">
-                <p className="text-lg font-bold text-yellow-700">{householdStats.evacuating}</p>
-                <p className="text-[10px] font-medium text-yellow-600">EVACUATING</p>
-              </div>
-              <div className="rounded-lg bg-red-50 p-2 text-center">
-                <p className="text-lg font-bold text-red-700">{householdStats.needsHelp}</p>
-                <p className="text-[10px] font-medium text-red-600">NEEDS HELP</p>
-              </div>
-              <div className="rounded-lg bg-gray-100 p-2 text-center">
-                <p className="text-lg font-bold text-gray-700">{householdStats.noResponse}</p>
-                <p className="text-[10px] font-medium text-gray-600">NO RESPONSE</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          {screen === "main" && (
+            <main className="flex-1 space-y-3 overflow-y-auto p-3">
+              {/* Alert Status Banner */}
+              <Card className={`border-0 ${getAlertColor(alertLevel)}`}>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/20">
+                      <AlertTriangle className="h-7 w-7 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-lg font-bold text-white">{getAlertText(alertLevel)}</p>
+                      <p className="text-sm text-white/80">
+                        {broadcastSent ? "Broadcast sent — tracking responses" : "Last updated: 5 min ago"}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
-        {/* Broadcast Warning Button */}
-        <Button 
-          className="h-14 w-full gap-3 bg-primary text-lg font-bold text-primary-foreground shadow-lg hover:bg-primary/90"
-          size="lg"
-        >
-          <Radio className="h-6 w-6" />
-          Broadcast Warning
-        </Button>
+              {/* Risk Summary */}
+              <div className="grid grid-cols-2 gap-2">
+                <Card className="border-border">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2">
+                      <Gauge className="h-5 w-5 text-primary" />
+                      <span className="text-xs text-muted-foreground">Water Level</span>
+                    </div>
+                    <p className="mt-1 text-xl font-bold text-foreground">{waterLevel}m</p>
+                    <p className="text-xs text-orange-600">Above normal</p>
+                  </CardContent>
+                </Card>
+                <Card className="border-border">
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2">
+                      <CloudRain className="h-5 w-5 text-primary" />
+                      <span className="text-xs text-muted-foreground">Rainfall Risk</span>
+                    </div>
+                    <p className="mt-1 text-xl font-bold text-foreground">{rainfallRisk}</p>
+                    <p className="text-xs text-orange-600">Heavy rain expected</p>
+                  </CardContent>
+                </Card>
+              </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-2 gap-2">
-          <Card className="cursor-pointer border-border transition-colors hover:border-primary/50">
-            <CardContent className="flex items-center gap-3 p-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                <FileText className="h-5 w-5 text-primary" />
+              {/* Response tracker (after broadcast) or static household stats */}
+              {broadcastSent ? (
+                <ResponseTracker
+                  households={households}
+                  timedOut={simulation.timedOut}
+                  elapsedMs={simulation.elapsedMs}
+                  onViewHouseholds={() => setScreen("households")}
+                  onPlanRoute={() => setScreen("route")}
+                />
+              ) : (
+                <Card className="border-border">
+                  <CardContent className="p-3">
+                    <div className="mb-3 flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Users className="h-5 w-5 text-primary" />
+                        <span className="text-sm font-semibold text-foreground">Household Status</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {affectedHouseholds}/{totalHouseholds} affected
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-4 gap-2">
+                      <div className="rounded-lg bg-green-50 p-2 text-center">
+                        <p className="text-lg font-bold text-green-700">{counts.safe}</p>
+                        <p className="text-[10px] font-medium text-green-600">SAFE</p>
+                      </div>
+                      <div className="rounded-lg bg-yellow-50 p-2 text-center">
+                        <p className="text-lg font-bold text-yellow-700">{counts.evacuating}</p>
+                        <p className="text-[10px] font-medium text-yellow-600">EVACUATING</p>
+                      </div>
+                      <div className="rounded-lg bg-red-50 p-2 text-center">
+                        <p className="text-lg font-bold text-red-700">{counts.needs_help}</p>
+                        <p className="text-[10px] font-medium text-red-600">NEEDS HELP</p>
+                      </div>
+                      <div className="rounded-lg bg-gray-100 p-2 text-center">
+                        <p className="text-lg font-bold text-gray-700">{counts.no_response}</p>
+                        <p className="text-[10px] font-medium text-gray-600">NO RESPONSE</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Broadcast Warning Button */}
+              <Button
+                onClick={handleBroadcastClick}
+                className="h-14 w-full gap-3 bg-primary text-lg font-bold text-primary-foreground shadow-lg hover:bg-primary/90"
+                size="lg"
+              >
+                <Radio className="h-6 w-6" />
+                {broadcastSent ? "Broadcast Again" : "Broadcast Warning"}
+              </Button>
+
+              {/* Quick Actions */}
+              <div className="grid grid-cols-2 gap-2">
+                <Card
+                  className="cursor-pointer border-border transition-colors hover:border-primary/50"
+                  onClick={() => setAlertOpen(true)}
+                >
+                  <CardContent className="flex items-center gap-3 p-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                      <FileText className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-foreground">Alert Details</p>
+                      <p className="text-xs text-muted-foreground">View BPBD info</p>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </CardContent>
+                </Card>
+                <Card
+                  className="cursor-pointer border-border transition-colors hover:border-primary/50"
+                  onClick={() => setScreen("households")}
+                >
+                  <CardContent className="flex items-center gap-3 p-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                      <Users className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-foreground">Households</p>
+                      <p className="text-xs text-muted-foreground">Manage follow-up</p>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </CardContent>
+                </Card>
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-foreground">Alert Details</p>
-                <p className="text-xs text-muted-foreground">View BPBD info</p>
-              </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            </CardContent>
-          </Card>
-          <Card className="cursor-pointer border-border transition-colors hover:border-primary/50">
-            <CardContent className="flex items-center gap-3 p-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                <Users className="h-5 w-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-foreground">Households</p>
-                <p className="text-xs text-muted-foreground">Manage follow-up</p>
-              </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            </CardContent>
-          </Card>
-        </div>
-      </main>
+
+              {broadcastSent && (
+                <Card
+                  className="cursor-pointer border-border transition-colors hover:border-primary/50"
+                  onClick={() => setScreen("route")}
+                >
+                  <CardContent className="flex items-center gap-3 p-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-100">
+                      <Footprints className="h-5 w-5 text-orange-600" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-foreground">Door-to-Door Route</p>
+                      <p className="text-xs text-muted-foreground">
+                        Prioritized check for non-responders
+                      </p>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </CardContent>
+                </Card>
+              )}
+            </main>
+          )}
+        </>
       )}
 
       {/* Bottom Navigation */}
@@ -292,7 +379,10 @@ export function FloodApp() {
           ].map((item) => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => {
+                setActiveTab(item.id)
+                setScreen("main")
+              }}
               className={`relative flex flex-col items-center gap-1 rounded-lg px-4 py-2 transition-colors ${
                 activeTab === item.id
                   ? "text-primary"
@@ -310,6 +400,25 @@ export function FloodApp() {
           ))}
         </div>
       </nav>
+
+      {/* BPBD Alert Banner Overlay */}
+      {alertOpen && (
+        <BPBDAlertBanner
+          alert={mockBPBDAlert}
+          households={households}
+          onReview={handleReviewAlert}
+          onDismiss={() => setAlertOpen(false)}
+        />
+      )}
+
+      {/* Broadcast Dialog */}
+      <BroadcastDialog
+        open={broadcastOpen}
+        onOpenChange={setBroadcastOpen}
+        alert={mockBPBDAlert}
+        households={households}
+        onComplete={handleBroadcastComplete}
+      />
     </div>
   )
 }
