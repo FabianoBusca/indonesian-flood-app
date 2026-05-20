@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { WhatsAppMonitor } from "@/components/whatsapp-monitor"
 import { AlertsView } from "@/components/alerts-view"
+import { LimitedConnectivityView } from "@/components/limited-connectivity-view"
 
 const languages = [
   { code: "en", label: "English" },
@@ -51,6 +52,7 @@ export function FloodApp() {
   const [connectionStatus] = useState<ConnectionStatus>("online")
 
   const currentLanguage = languages.find((l) => l.code === language)
+  const displayedConnectionStatus: ConnectionStatus = activeTab === "offline" ? "limited" : connectionStatus
 
   // Mock data for the dashboard
   const alertLevel = "WARNING" // NORMAL, WATCH, WARNING, DANGER
@@ -90,10 +92,14 @@ export function FloodApp() {
       limited: { icon: Wifi, color: "text-yellow-600", bg: "bg-yellow-100", label: "Limited" },
       offline: { icon: WifiOff, color: "text-red-600", bg: "bg-red-100", label: "Offline" },
     }
-    const { icon: Icon, color, bg, label } = config[connectionStatus]
+    const { icon: Icon, color, bg, label } = config[displayedConnectionStatus]
     
     return (
-      <div className={`flex items-center justify-center rounded-full p-1.5 ${bg}`}>
+      <div
+        aria-label={`Connection status: ${label}`}
+        className={`flex items-center justify-center rounded-full p-1.5 ${bg}`}
+        title={`Connection status: ${label}`}
+      >
         <Icon className={`h-3.5 w-3.5 ${color}`} />
       </div>
     )
@@ -169,7 +175,12 @@ export function FloodApp() {
           <AlertsView />
         </main>
       )}
-      {(activeTab === "home" || activeTab === "offline" || activeTab === "settings") && (
+      {activeTab === "offline" && (
+        <main className="flex-1 overflow-hidden">
+          <LimitedConnectivityView />
+        </main>
+      )}
+      {(activeTab === "home" || activeTab === "settings") && (
       <main className="flex-1 space-y-3 overflow-y-auto p-3">
         {/* Alert Status Banner */}
         <Card className={`border-0 ${getAlertColor(alertLevel)}`}>
@@ -287,13 +298,13 @@ export function FloodApp() {
           {[
             { id: "home", icon: Home, label: "Home" },
             { id: "alerts", icon: Bell, label: "Alerts", badge: true },
-            { id: "community", icon: MessageSquare, label: "Community" },
+            { id: "offline", icon: WifiOff, label: "Offline" },
             { id: "settings", icon: Settings, label: "Settings" },
           ].map((item) => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`relative flex flex-col items-center gap-1 rounded-lg px-4 py-2 transition-colors ${
+              className={`relative flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-colors ${
                 activeTab === item.id
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
