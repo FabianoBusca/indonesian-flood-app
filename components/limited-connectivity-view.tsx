@@ -10,6 +10,7 @@ import {
   Home,
   Megaphone,
   MessageSquare,
+  ChevronRight,
   RotateCw,
   ShieldAlert,
   WifiOff,
@@ -20,6 +21,7 @@ import { Card, CardContent } from "@/components/ui/card"
 
 type HouseholdStatus = "Pending" | "Visited - safe" | "Visited - needs help" | "No response"
 type SyncState = "limited" | "syncing" | "synced"
+type DetailPanel = "cache" | "fallback" | "alert" | `household-${number}` | null
 
 const priorityHouseholds = [
   {
@@ -54,6 +56,7 @@ const priorityHouseholds = [
 export function LimitedConnectivityView() {
   const [statuses, setStatuses] = useState<Record<number, HouseholdStatus>>({})
   const [syncState, setSyncState] = useState<SyncState>("limited")
+  const [openDetail, setOpenDetail] = useState<DetailPanel>(null)
 
   const localUpdateCount = Object.keys(statuses).length
   const unsyncedCount = syncState === "synced" ? 0 : localUpdateCount
@@ -70,6 +73,10 @@ export function LimitedConnectivityView() {
     if (syncState === "synced") {
       setSyncState("limited")
     }
+  }
+
+  const toggleDetail = (panel: DetailPanel) => {
+    setOpenDetail((current) => current === panel ? null : panel)
   }
 
   return (
@@ -124,21 +131,60 @@ export function LimitedConnectivityView() {
         </div>
 
         <div className="grid grid-cols-2 gap-2">
-          <div className="rounded-md border border-border bg-card p-3">
+          <button
+            className="rounded-md border border-border bg-card p-3 text-left transition-colors hover:border-primary/50"
+            onClick={() => toggleDetail("cache")}
+          >
             <div className="flex items-center gap-2">
               <Database className="h-4 w-4 text-primary" />
               <p className="text-xs font-semibold">Offline cache</p>
+              <ChevronRight className="ml-auto h-3.5 w-3.5 text-muted-foreground" />
             </div>
             <p className="mt-1 text-[11px] text-muted-foreground">Households, vulnerability profiles, and latest BPBD alerts available on device.</p>
-          </div>
-          <div className="rounded-md border border-border bg-card p-3">
+          </button>
+          <button
+            className="rounded-md border border-border bg-card p-3 text-left transition-colors hover:border-primary/50"
+            onClick={() => toggleDetail("fallback")}
+          >
             <div className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4 text-primary" />
               <p className="text-xs font-semibold">Fallback channels</p>
+              <ChevronRight className="ml-auto h-3.5 w-3.5 text-muted-foreground" />
             </div>
             <p className="mt-1 text-[11px] text-muted-foreground">SMS continues for many homes; mosque loudspeaker remains independent.</p>
-          </div>
+          </button>
         </div>
+
+        {openDetail === "cache" && (
+          <div className="rounded-md border border-primary/20 bg-primary/5 p-3">
+            <p className="text-xs font-bold text-foreground">Cached on Asep's device</p>
+            <div className="mt-2 grid grid-cols-3 gap-2 text-center">
+              <div className="rounded-md bg-background p-2">
+                <p className="text-sm font-bold">156</p>
+                <p className="text-[9px] text-muted-foreground">Households</p>
+              </div>
+              <div className="rounded-md bg-background p-2">
+                <p className="text-sm font-bold">12</p>
+                <p className="text-[9px] text-muted-foreground">Vulnerable</p>
+              </div>
+              <div className="rounded-md bg-background p-2">
+                <p className="text-sm font-bold">3</p>
+                <p className="text-[9px] text-muted-foreground">Alerts</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {openDetail === "fallback" && (
+          <div className="rounded-md border border-primary/20 bg-primary/5 p-3">
+            <p className="text-xs font-bold text-foreground">Fallback delivery queue</p>
+            <div className="mt-2 space-y-1 text-[11px] text-muted-foreground">
+              <p>SMS delivered to 41 households with basic phones.</p>
+              <p>8 WhatsApp acknowledgments failed and were marked for follow-up.</p>
+              <p>Mosque loudspeaker announcement scheduled every 15 minutes.</p>
+            </div>
+          </div>
+        )}
 
         <div className="rounded-md border border-border bg-muted p-3">
           <div className="flex items-center gap-2">
@@ -150,15 +196,30 @@ export function LimitedConnectivityView() {
           </p>
         </div>
 
-        <div className="rounded-md border border-amber-200 bg-amber-50 p-3">
+        <button
+          className="w-full rounded-md border border-amber-200 bg-amber-50 p-3 text-left transition-colors hover:border-amber-400"
+          onClick={() => toggleDetail("alert")}
+        >
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-amber-700" />
             <p className="text-xs font-bold text-amber-900">Recent alert cached at 15:42</p>
+            <ChevronRight className="ml-auto h-3.5 w-3.5 text-amber-800" />
           </div>
           <p className="mt-1 text-[11px] text-amber-800">
             Water level rising near Block A and Gang Mawar. Failed acknowledgments are converted into a local priority visit list.
           </p>
-        </div>
+        </button>
+
+        {openDetail === "alert" && (
+          <div className="rounded-md border border-amber-200 bg-white p-3">
+            <p className="text-xs font-bold text-foreground">Alert details available offline</p>
+            <div className="mt-2 space-y-1 text-[11px] text-muted-foreground">
+              <p>Source: BPBD warning plus resident reports from RT 05.</p>
+              <p>Instruction: Check elderly households first, then homes near drainage channels.</p>
+              <p>Last successful sync: 15:42 before the network became unstable.</p>
+            </div>
+          </div>
+        )}
 
         <section className="space-y-2">
           <div className="flex items-center justify-between">
@@ -225,6 +286,25 @@ export function LimitedConnectivityView() {
                     No response
                   </Button>
                 </div>
+
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="mt-2 h-7 w-full justify-between px-2 text-[11px]"
+                  onClick={() => toggleDetail(`household-${household.id}`)}
+                >
+                  Open cached profile
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
+
+                {openDetail === `household-${household.id}` && (
+                  <div className="mt-2 rounded-md bg-muted p-2 text-[11px] text-muted-foreground">
+                    <p className="font-semibold text-foreground">Cached household profile</p>
+                    <p>Primary contact: {household.name}</p>
+                    <p>Visit note: prioritize evacuation guidance and confirm family count at the door.</p>
+                    <p>Offline route: saved from RT 05 map before connectivity degraded.</p>
+                  </div>
+                )}
 
                 <div className="mt-2 flex items-center gap-1.5 text-[10px] text-muted-foreground">
                   <CheckCircle2 className={`h-3.5 w-3.5 ${status === "Pending" ? "text-muted-foreground" : "text-green-600"}`} />
