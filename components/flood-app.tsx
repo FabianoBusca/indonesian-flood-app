@@ -37,6 +37,7 @@ import { ResponseTracker } from "@/components/response-tracker"
 import { RoutePlanner } from "@/components/route-planner"
 import { useSimulation } from "@/hooks/use-simulation"
 import { getNonResponsive, getStatusCounts, mockBPBDAlert } from "@/lib/mock-data"
+import { LimitedConnectivityView } from "@/components/limited-connectivity-view"
 import { t } from "@/lib/i18n"
 
 const languages = [
@@ -54,10 +55,11 @@ export function FloodApp() {
   const [connectionStatus] = useState<ConnectionStatus>("online")
   const [screen, setScreen] = useState<Screen>("main")
   const [alertOpen, setAlertOpen] = useState(false)
-  const [broadcastOpen, setBroadcastOpen] = useState(false)
+      {(activeTab === "home" || activeTab === "settings") && (
   const [broadcastSent, setBroadcastSent] = useState(false)
 
   const currentLanguage = languages.find((l) => l.code === language)
+  const displayedConnectionStatus: ConnectionStatus = activeTab === "offline" ? "limited" : connectionStatus
 
   const simulation = useSimulation({
     tickMs: 1500,
@@ -125,9 +127,13 @@ export function FloodApp() {
       limited: { icon: Wifi, color: "text-yellow-600", bg: "bg-yellow-100", label: "Limited" },
       offline: { icon: WifiOff, color: "text-red-600", bg: "bg-red-100", label: "Offline" },
     }
-    const { icon: Icon, color, bg } = config[connectionStatus]
+    const { icon: Icon, color, bg, label } = config[displayedConnectionStatus]
     return (
-      <div className={`flex items-center justify-center rounded-full p-1.5 ${bg}`}>
+      <div
+        aria-label={`Connection status: ${label}`}
+        className={`flex items-center justify-center rounded-full p-1.5 ${bg}`}
+        title={`Connection status: ${label}`}
+      >
         <Icon className={`h-3.5 w-3.5 ${color}`} />
       </div>
     )
@@ -203,6 +209,7 @@ export function FloodApp() {
           <AlertsView />
         </main>
       )}
+<<<<<<< HEAD
       {(activeTab === "home" || activeTab === "offline" || activeTab === "settings") && (
         <>
           {screen === "households" && (
@@ -214,6 +221,29 @@ export function FloodApp() {
               />
             </main>
           )}
+=======
+      {activeTab === "offline" && (
+        <main className="flex-1 overflow-hidden">
+          <LimitedConnectivityView />
+        </main>
+      )}
+      {(activeTab === "home" || activeTab === "settings") && (
+      <main className="flex-1 space-y-3 overflow-y-auto p-3">
+        {/* Alert Status Banner */}
+        <Card className={`border-0 ${getAlertColor(alertLevel)}`}>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/20">
+                <AlertTriangle className="h-7 w-7 text-white" />
+              </div>
+              <div className="flex-1">
+                <p className="text-lg font-bold text-white">{getAlertText(alertLevel)}</p>
+                <p className="text-sm text-white/80">Last updated: 5 min ago</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+>>>>>>> origin/scenario2
 
           {screen === "route" && (
             <main className="flex-1 overflow-hidden">
@@ -375,6 +405,7 @@ export function FloodApp() {
       <nav className="border-t border-border bg-card px-2 pb-4 pt-2">
         <div className="flex items-center justify-around">
           {[
+<<<<<<< HEAD
             { id: "home", icon: Home, label: t(language as any, 'navHome') },
             { id: "alerts", icon: Bell, label: t(language as any, 'navAlerts'), badge: true },
             { id: "community", icon: MessageSquare, label: t(language as any, 'navCommunity') },
@@ -387,6 +418,17 @@ export function FloodApp() {
                 setScreen("main")
               }}
               className={`relative flex flex-col items-center gap-1 rounded-lg px-4 py-2 transition-colors ${
+=======
+            { id: "home", icon: Home, label: "Home" },
+            { id: "alerts", icon: Bell, label: "Alerts", badge: true },
+            { id: "offline", icon: WifiOff, label: "Offline" },
+            { id: "settings", icon: Settings, label: "Settings" },
+          ].map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id)}
+              className={`relative flex flex-col items-center gap-1 rounded-lg px-2 py-2 transition-colors ${
+>>>>>>> origin/scenario2
                 activeTab === item.id
                   ? "text-primary"
                   : "text-muted-foreground hover:text-foreground"
