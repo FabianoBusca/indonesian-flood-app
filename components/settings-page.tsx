@@ -1,6 +1,7 @@
 "use client"
 
-import { Volume2, Eye, Type, Maximize2, Zap, Moon, ChevronRight } from "lucide-react"
+import { useState } from "react"
+import { Volume2, Eye, Type, Maximize2, Zap, Moon, ChevronRight, LogOut } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -20,11 +21,14 @@ export function SettingsPage({
   language = "en",
   accessibility,
   onAccessibilityChange,
+  onLogout,
 }: {
   language?: Locale
   accessibility: AccessibilitySettings
   onAccessibilityChange: (settings: AccessibilitySettings) => void
+  onLogout?: () => void
 }) {
+  const [showLogoutWarning, setShowLogoutWarning] = useState(false)
   const handleTextSizeChange = (size: 'small' | 'medium' | 'large') => {
     onAccessibilityChange({ ...accessibility, textSize: size })
   }
@@ -275,7 +279,54 @@ export function SettingsPage({
         </CardContent>
       </Card>
 
+      {/* Logout */}
+      <Card className="border-red-200">
+        <CardContent className="p-4">
+          <button
+            onClick={() => setShowLogoutWarning(true)}
+            className="flex w-full items-center gap-3 text-left"
+          >
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-red-100">
+              <LogOut className="h-4 w-4 text-red-600" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-red-600">Log out</p>
+              <p className="text-[10px] text-muted-foreground">Sign out of your account</p>
+            </div>
+          </button>
+        </CardContent>
+      </Card>
+
       <div className="pb-4" />
+
+      {/* Logout confirmation dialog */}
+      {showLogoutWarning && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 px-4 pb-8">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl">
+            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+              <LogOut className="h-5 w-5 text-red-600" />
+            </div>
+            <h3 className="mb-1 text-base font-bold text-foreground">Log out?</h3>
+            <p className="mb-4 text-sm text-muted-foreground">
+              You will be signed out and will <span className="font-semibold text-red-600">not receive any flood alerts or notifications</span> until you log back in.
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowLogoutWarning(false)}
+                className="flex-1 rounded-lg border border-border py-2 text-sm font-medium text-foreground hover:bg-muted"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => { setShowLogoutWarning(false); onLogout?.() }}
+                className="flex-1 rounded-lg bg-red-600 py-2 text-sm font-semibold text-white hover:bg-red-700"
+              >
+                Log out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

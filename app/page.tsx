@@ -1,10 +1,10 @@
 import { PhoneFrame } from "@/components/phone-frame"
-import { FloodApp } from "@/components/flood-app"
+import { AppShell } from "@/components/app-shell"
 
 export default function Home() {
   return (
     <PhoneFrame>
-      <FloodApp />
+      <AppShell />
     </PhoneFrame>
   )
 }

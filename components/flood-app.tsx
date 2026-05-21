@@ -6,7 +6,6 @@ import {
   Bell,
   ChevronRight,
   CloudRain,
-  Droplets,
   FileText,
   Footprints,
   Gauge,
@@ -61,7 +60,7 @@ interface AccessibilitySettings {
   lineSpacing: 'normal' | 'comfortable' | 'wide'
 }
 
-export function FloodApp() {
+export function FloodApp({ onLogout }: { onLogout?: () => void } = {}) {
   const [language, setLanguage] = useState<Locale>("en")
   const [activeTab, setActiveTab] = useState("home")
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>("online")
@@ -367,12 +366,14 @@ export function FloodApp() {
       <header className="bg-primary px-4 pb-4 pt-2">
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-foreground">
-              <Droplets className="h-5 w-5 text-primary" />
-            </div>
+            <img
+              src="/logo.jpg"
+              alt="RakyatBanjir"
+              className="h-10 w-10 flex-shrink-0 rounded-xl object-cover"
+            />
             <div className="flex items-center gap-2">
               <div>
-                <h1 className="text-base font-bold text-primary-foreground">RakyatBanjir</h1>
+                <h1 className="text-base font-bold text-primary-foreground">Rakyat<span className="text-primary-foreground/50">Banjir</span></h1>
                 <p className="text-[10px] text-primary-foreground/70">Citeureup Village</p>
               </div>
               {activeTab === 'offline' ? (
@@ -438,6 +439,7 @@ export function FloodApp() {
             language={language}
             accessibility={accessibility}
             onAccessibilityChange={setAccessibility}
+            onLogout={onLogout}
           />
         </main>
       )}
