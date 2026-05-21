@@ -123,3 +123,36 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Accessibility Modes */
+
+/* Status bar elements stay unaffected by accessibility */
+.status-bar-time {
+  font-weight: 400 !important;
+}
+
+/* High Contrast Mode */
+.high-contrast-mode {
+  --foreground: oklch(0 0 0);
+  --background: oklch(1 0 0);
+  --primary: oklch(0.1 0 0);
+  --primary-foreground: oklch(1 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0 0 0);
+  --border: oklch(0 0 0);
+}
+
+.high-contrast-mode * {
+  border-color: oklch(0 0 0) !important;
+}
+
+/* Reduced Motion Mode */
+.reduced-motion-mode * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Colorblind simulation — filter applied via inline style in flood-app.tsx */
+

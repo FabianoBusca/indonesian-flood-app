@@ -9,6 +9,7 @@ import {
   getStatusCounts,
   getNonResponsive,
 } from "@/lib/mock-data"
+import { t, type Locale } from "@/lib/i18n"
 
 interface ResponseTrackerProps {
   households: Household[]
@@ -16,6 +17,7 @@ interface ResponseTrackerProps {
   elapsedMs: number
   onViewHouseholds?: () => void
   onPlanRoute?: () => void
+  language?: Locale
 }
 
 export function ResponseTracker({
@@ -24,6 +26,7 @@ export function ResponseTracker({
   elapsedMs,
   onViewHouseholds,
   onPlanRoute,
+  language = "en",
 }: ResponseTrackerProps) {
   const counts = getStatusCounts(households)
   const total = households.length
@@ -38,15 +41,15 @@ export function ResponseTracker({
           <div className="mb-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5 text-primary" />
-              <span className="text-sm font-semibold">Response Progress</span>
+              <span className="text-sm font-semibold">{t(language, "responseProgress")}</span>
             </div>
             <span className="text-xs text-muted-foreground">
-              {responded}/{total} responded
+              {responded}/{total} {t(language, "responded")}
             </span>
           </div>
           <Progress value={pct} className="h-2" />
           <p className="mt-1 text-[10px] text-muted-foreground">
-            Elapsed: {Math.floor(elapsedMs / 1000)}s
+            {t(language, "elapsed")}: {Math.floor(elapsedMs / 1000)}s
           </p>
         </CardContent>
       </Card>
@@ -54,19 +57,19 @@ export function ResponseTracker({
       <div className="grid grid-cols-4 gap-2">
         <div className="rounded-lg bg-green-50 p-2 text-center">
           <p className="text-lg font-bold text-green-700">{counts.safe}</p>
-          <p className="text-[10px] font-medium text-green-600">SAFE</p>
+          <p className="text-[10px] font-medium leading-tight text-green-600">{t(language, "safe")}</p>
         </div>
         <div className="rounded-lg bg-yellow-50 p-2 text-center">
           <p className="text-lg font-bold text-yellow-700">{counts.evacuating}</p>
-          <p className="text-[10px] font-medium text-yellow-600">EVACUATING</p>
+          <p className="text-[10px] font-medium leading-tight text-yellow-600">{t(language, "evacuating")}</p>
         </div>
         <div className="rounded-lg bg-red-50 p-2 text-center">
           <p className="text-lg font-bold text-red-700">{counts.needs_help}</p>
-          <p className="text-[10px] font-medium text-red-600">NEEDS HELP</p>
+          <p className="text-[10px] font-medium leading-tight text-red-600">{t(language, "needsHelp")}</p>
         </div>
         <div className="rounded-lg bg-gray-100 p-2 text-center">
           <p className="text-lg font-bold text-gray-700">{counts.no_response}</p>
-          <p className="text-[10px] font-medium text-gray-600">NO RESPONSE</p>
+          <p className="text-[10px] font-medium leading-tight text-gray-600">{t(language, "noResponse")}</p>
         </div>
       </div>
 
@@ -77,10 +80,10 @@ export function ResponseTracker({
               <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
               <div className="flex-1">
                 <p className="text-sm font-bold text-red-700">
-                  {nonResponsive.length} households have not responded
+                  {nonResponsive.length} {t(language, "householdsNoResponse")}
                 </p>
                 <p className="mt-0.5 text-xs text-red-600">
-                  Vulnerable families are prioritized for door-to-door check.
+                  {t(language, "prioritizedDoorToDoor")}
                 </p>
               </div>
             </div>
@@ -91,7 +94,7 @@ export function ResponseTracker({
                 className="h-8 text-xs"
                 onClick={onViewHouseholds}
               >
-                View list
+                {t(language, "viewList")}
                 <ChevronRight className="ml-1 h-3 w-3" />
               </Button>
               <Button
@@ -99,7 +102,7 @@ export function ResponseTracker({
                 className="h-8 bg-red-600 text-xs text-white hover:bg-red-700"
                 onClick={onPlanRoute}
               >
-                Plan route
+                {t(language, "planRoute")}
                 <ChevronRight className="ml-1 h-3 w-3" />
               </Button>
             </div>
