@@ -5,22 +5,24 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import type { BPBDAlert, Household } from "@/lib/mock-data"
+import { t, type Locale } from "@/lib/i18n"
 
 interface BPBDAlertBannerProps {
   alert: BPBDAlert
   households: Household[]
   onReview: () => void
   onDismiss?: () => void
+  language?: Locale
 }
 
 const SEVERITY_STYLES: Record<BPBDAlert["severity"], { bg: string; label: string }> = {
-  AMAN: { bg: "bg-green-600", label: "AMAN — Safe" },
-  WASPADA: { bg: "bg-yellow-500", label: "WASPADA — Watch" },
-  SIAGA: { bg: "bg-orange-500", label: "SIAGA — Warning" },
-  BAHAYA: { bg: "bg-red-600", label: "BAHAYA — Danger" },
+  AMAN: { bg: "bg-green-600", label: "AMAN" },
+  WASPADA: { bg: "bg-yellow-500", label: "WASPADA" },
+  SIAGA: { bg: "bg-orange-500", label: "SIAGA" },
+  BAHAYA: { bg: "bg-red-600", label: "BAHAYA" },
 }
 
-export function BPBDAlertBanner({ alert, households, onReview, onDismiss }: BPBDAlertBannerProps) {
+export function BPBDAlertBanner({ alert, households, onReview, onDismiss, language = "en" }: BPBDAlertBannerProps) {
   const style = SEVERITY_STYLES[alert.severity]
   const affected = households.length
 
@@ -29,7 +31,7 @@ export function BPBDAlertBanner({ alert, households, onReview, onDismiss }: BPBD
       <div className={`flex items-center justify-between px-4 py-2 ${style.bg}`}>
         <div className="flex items-center gap-2">
           <AlertTriangle className="h-5 w-5 text-white" />
-          <span className="text-sm font-bold text-white">Incoming BPBD Alert</span>
+          <span className="text-sm font-bold text-white">{t(language, "incomingAlert")}</span>
         </div>
         {onDismiss && (
           <Button
@@ -59,7 +61,7 @@ export function BPBDAlertBanner({ alert, households, onReview, onDismiss }: BPBD
             <CardContent className="p-3">
               <div className="flex items-center gap-1.5">
                 <Droplets className="h-4 w-4 text-primary" />
-                <span className="text-[10px] text-muted-foreground">Predicted Level</span>
+                <span className="text-[10px] text-muted-foreground">{t(language, "predictedLevel")}</span>
               </div>
               <p className="mt-1 text-lg font-bold">{alert.predictedFloodLevel}m</p>
             </CardContent>
@@ -68,7 +70,7 @@ export function BPBDAlertBanner({ alert, households, onReview, onDismiss }: BPBD
             <CardContent className="p-3">
               <div className="flex items-center gap-1.5">
                 <Users className="h-4 w-4 text-primary" />
-                <span className="text-[10px] text-muted-foreground">Affected Households</span>
+                <span className="text-[10px] text-muted-foreground">{t(language, "affectedHouseholds")}</span>
               </div>
               <p className="mt-1 text-lg font-bold">{affected}</p>
             </CardContent>
@@ -80,18 +82,18 @@ export function BPBDAlertBanner({ alert, households, onReview, onDismiss }: BPBD
             <div>
               <div className="flex items-center gap-1.5">
                 <MapPin className="h-4 w-4 text-primary" />
-                <span className="text-xs font-semibold">Affected Area</span>
+                <span className="text-xs font-semibold">{t(language, "affectedArea")}</span>
               </div>
               <p className="mt-1 text-xs text-muted-foreground">{alert.affectedArea}</p>
             </div>
 
             <div>
-              <p className="text-xs font-semibold">Evacuation Recommendation</p>
+              <p className="text-xs font-semibold">{t(language, "evacuationRecommendation")}</p>
               <p className="mt-1 text-xs text-muted-foreground">{alert.evacuationRecommendation}</p>
             </div>
 
             <div>
-              <p className="text-xs font-semibold">Shelter Locations</p>
+              <p className="text-xs font-semibold">{t(language, "shelterLocations")}</p>
               <ul className="mt-1 space-y-1">
                 {alert.shelterLocations.map((s) => (
                   <li key={s} className="flex items-start gap-1.5 text-xs text-muted-foreground">
@@ -110,7 +112,7 @@ export function BPBDAlertBanner({ alert, households, onReview, onDismiss }: BPBD
           className="h-12 w-full gap-2 bg-orange-500 text-base font-bold text-white shadow-lg hover:bg-orange-600"
           onClick={onReview}
         >
-          Review & Broadcast
+          {t(language, "reviewBroadcast")}
         </Button>
       </div>
     </div>

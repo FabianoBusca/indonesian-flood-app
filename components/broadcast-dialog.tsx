@@ -19,6 +19,7 @@ import {
   getChannelBreakdown,
   getChannelLabel,
 } from "@/lib/mock-data"
+import { t, type Locale } from "@/lib/i18n"
 
 interface BroadcastDialogProps {
   open: boolean
@@ -26,6 +27,7 @@ interface BroadcastDialogProps {
   alert: BPBDAlert
   households: Household[]
   onComplete: () => void
+  language?: Locale
 }
 
 const CHANNEL_ICON: Record<CommunicationChannel, typeof MessageCircle> = {
@@ -42,13 +44,22 @@ const CHANNEL_COLOR: Record<CommunicationChannel, string> = {
   door_to_door: "text-orange-600",
 }
 
-function defaultMessage(alert: BPBDAlert): string {
+function defaultMessage(alert: BPBDAlert, language: Locale): string {
+  const shelterLabel =
+    language === "id" ? "Evakuasi ke posko terdekat:" : language === "su" ? "Evakuasi ka pangungsian pangcaketna:" : "Evacuate to nearest shelter:"
+  const replyLabel =
+    language === "id"
+      ? "Balas dengan status Anda: AMAN, MENGUNGSI, atau BANTUAN."
+      : language === "su"
+      ? "Bales ku status anjeun: AMAN, MENGUNGSI, atanapi BANTUAN."
+      : "Reply with your status: SAFE, EVACUATING, or HELP."
+
   return (
     `[${alert.severity}] ${alert.title}\n\n` +
     `${alert.description}\n\n` +
-    `Evacuate to nearest shelter:\n` +
+    `${shelterLabel}\n` +
     alert.shelterLocations.map((s) => `• ${s}`).join("\n") +
-    `\n\nReply with your status: SAFE, EVACUATING, or HELP.`
+    `\n\n${replyLabel}`
   )
 }
 
@@ -58,8 +69,9 @@ export function BroadcastDialog({
   alert,
   households,
   onComplete,
+  language = "en",
 }: BroadcastDialogProps) {
-  const [message, setMessage] = useState(() => defaultMessage(alert))
+  const [message, setMessage] = useState(() => defaultMessage(alert, language))
   const [phase, setPhase] = useState<"compose" | "dispatching" | "complete">("compose")
   const [progress, setProgress] = useState<Record<CommunicationChannel, number>>({
     whatsapp: 0,
@@ -74,10 +86,10 @@ export function BroadcastDialog({
   useEffect(() => {
     if (!open) {
       setPhase("compose")
-      setMessage(defaultMessage(alert))
+      setMessage(defaultMessage(alert, language))
       setProgress({ whatsapp: 0, sms: 0, mosque_loudspeaker: 0, door_to_door: 0 })
     }
-  }, [open, alert])
+  }, [open, alert, language])
 
   useEffect(() => {
     if (phase !== "dispatching") return
@@ -133,29 +145,33 @@ export function BroadcastDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Radio className="h-5 w-5 text-primary" />
-            {phase === "compose" && "Emergency Broadcast"}
-            {phase === "dispatching" && "Dispatching…"}
-            {phase === "complete" && "Broadcast Sent"}
+            {phase === "compose" && t(language, "emergencyBroadcast")}
+            {phase === "dispatching" && t(language, "dispatching")}
+            {phase === "complete" && t(language, "broadcastSentTitle")}
           </DialogTitle>
         </DialogHeader>
 
         {phase === "compose" && (
           <div className="space-y-3">
             <div>
-              <label className="text-xs font-semibold">Message</label>
+              <label className="text-xs font-semibold">{t(language, "messageTemplate")}</label>
               <Textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 className="mt-1 min-h-[80px] text-xs"
               />
               <p className="mt-1 text-[10px] text-muted-foreground">
-                You can edit shelter details and custom instructions before sending.
+                {language === "id"
+                  ? "Anda dapat mengubah detail posko dan instruksi khusus sebelum mengirim."
+                  : language === "su"
+                  ? "Anjeun tiasa ngarobih detil pangungsian jeung parentah husus saméméh ngirim."
+                  : "You can edit shelter details and custom instructions before sending."}
               </p>
             </div>
 
             <Card>
               <CardContent className="space-y-2 p-3">
-                <p className="text-xs font-semibold">Channel Summary</p>
+                <p className="text-xs font-semibold">{t(language, "channelSummary")}</p>
                 {(["whatsapp", "sms", "mosque_loudspeaker", "door_to_door"] as CommunicationChannel[]).map(
                   (c) => {
                     const Icon = CHANNEL_ICON[c]
@@ -165,13 +181,15 @@ export function BroadcastDialog({
                           <Icon className={`h-3.5 w-3.5 ${CHANNEL_COLOR[c]}`} />
                           {getChannelLabel(c)}
                         </span>
-                        <span className="font-semibold">{breakdown[c]} households</span>
+                        <span className="font-semibold">
+                          {breakdown[c]} {t(language, "householdsUnit")}
+                        </span>
                       </div>
                     )
                   },
                 )}
                 <div className="mt-2 flex items-center justify-between border-t border-border pt-2 text-xs">
-                  <span className="font-semibold">Total recipients</span>
+                  <span className="font-semibold">{t(language, "totalRecipients")}</span>
                   <span className="font-bold text-primary">{totalRecipients}</span>
                 </div>
               </CardContent>
@@ -182,7 +200,7 @@ export function BroadcastDialog({
               className="h-12 w-full gap-2 bg-red-600 text-base font-bold text-white hover:bg-red-700"
             >
               <Radio className="h-5 w-5" />
-              Send Emergency Broadcast
+              {t(language, "sendEmergencyBroadcast")}
             </Button>
           </div>
         )}
@@ -198,13 +216,29 @@ export function BroadcastDialog({
                 const label =
                   c === "mosque_loudspeaker"
                     ? sent >= total && total > 0
-                      ? "Mosque loudspeaker request sent"
-                      : "Requesting mosque loudspeaker…"
+                      ? (language === "id"
+                        ? "Permintaan pengeras suara masjid terkirim"
+                        : language === "su"
+                        ? "Pundutan pengeras suara masjid dikirim"
+                        : "Mosque loudspeaker request sent")
+                      : (language === "id"
+                        ? "Meminta pengeras suara masjid…"
+                        : language === "su"
+                        ? "Ngaréquest pengeras suara masjid…"
+                        : "Requesting mosque loudspeaker…")
                     : c === "door_to_door"
                     ? sent >= total && total > 0
-                      ? "Door-to-door queue prepared"
-                      : "Preparing door-to-door queue…"
-                    : `Sending ${getChannelLabel(c)} messages… ${sent}/${total}`
+                      ? (language === "id"
+                        ? "Antrean door-to-door disiapkan"
+                        : language === "su"
+                        ? "Antrian door-to-door disiapkeun"
+                        : "Door-to-door queue prepared")
+                      : (language === "id"
+                        ? "Menyiapkan antrean door-to-door…"
+                        : language === "su"
+                        ? "Nyiapkeun antrian door-to-door…"
+                        : "Preparing door-to-door queue…")
+                    : `${language === "id" ? "Mengirim" : language === "su" ? "Ngirim" : "Sending"} ${getChannelLabel(c)} ${language === "id" ? "pesan" : language === "su" ? "pesen" : "messages"}… ${sent}/${total}`
                 return (
                   <div key={c}>
                     <div className="mb-1 flex items-center justify-between text-xs">
@@ -228,13 +262,17 @@ export function BroadcastDialog({
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-green-100">
                 <Check className="h-8 w-8 text-green-600" />
               </div>
-              <p className="text-base font-bold">Broadcast Complete</p>
+              <p className="text-base font-bold">{t(language, "broadcastComplete")}</p>
               <p className="text-center text-xs text-muted-foreground">
-                Alert sent to {totalRecipients} households across {Object.values(breakdown).filter((v) => v > 0).length} channels.
+                {language === "id"
+                  ? `Peringatan dikirim ke ${totalRecipients} rumah tangga melalui ${Object.values(breakdown).filter((v) => v > 0).length} saluran.`
+                  : language === "su"
+                  ? `Panggeuing dikirim ka ${totalRecipients} rumah tangga ngaliwatan ${Object.values(breakdown).filter((v) => v > 0).length} saluran.`
+                  : `Alert sent to ${totalRecipients} households across ${Object.values(breakdown).filter((v) => v > 0).length} channels.`}
               </p>
             </div>
             <Button onClick={handleFinish} className="h-11 w-full bg-primary font-bold">
-              View Response Tracking
+              {t(language, "viewResponseTracking")}
             </Button>
           </div>
         )}

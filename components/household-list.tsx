@@ -28,25 +28,27 @@ import {
   getChannelLabel,
   isVulnerable,
 } from "@/lib/mock-data"
+import { t, type Locale } from "@/lib/i18n"
 
 interface HouseholdListProps {
   households: Household[]
   onBack?: () => void
   highlightNonResponsive?: boolean
+  language?: Locale
 }
 
-const STATUS_STYLES: Record<HouseholdStatus, { label: string; className: string }> = {
-  safe: { label: "SAFE", className: "bg-green-100 text-green-700 border-green-200" },
-  evacuating: { label: "EVACUATING", className: "bg-yellow-100 text-yellow-700 border-yellow-200" },
-  needs_help: { label: "NEEDS HELP", className: "bg-red-100 text-red-700 border-red-200" },
-  no_response: { label: "NO RESPONSE", className: "bg-gray-100 text-gray-700 border-gray-200" },
+const STATUS_STYLES: Record<HouseholdStatus, { key: string; className: string }> = {
+  safe: { key: "safeStatus", className: "bg-green-100 text-green-700 border-green-200" },
+  evacuating: { key: "evacuatingStatus", className: "bg-yellow-100 text-yellow-700 border-yellow-200" },
+  needs_help: { key: "needsHelpStatus", className: "bg-red-100 text-red-700 border-red-200" },
+  no_response: { key: "noResponseStatus", className: "bg-gray-100 text-gray-700 border-gray-200" },
 }
 
 const VULN_LABEL: Record<VulnerabilityFlag, string> = {
-  elderly: "Elderly",
-  disabled: "Disabled",
-  infant: "Infant",
-  pregnant: "Pregnant",
+  elderly: "elderly",
+  disabled: "disabled",
+  infant: "infant",
+  pregnant: "pregnant",
 }
 
 function ChannelIcon({ channel }: { channel: CommunicationChannel }) {
@@ -68,6 +70,7 @@ export function HouseholdList({
   households,
   onBack,
   highlightNonResponsive = false,
+  language = "en",
 }: HouseholdListProps) {
   const [statusFilter, setStatusFilter] = useState<HouseholdStatus | "all">("all")
   const [vulnFilter, setVulnFilter] = useState<"all" | "vulnerable">("all")
@@ -99,30 +102,32 @@ export function HouseholdList({
         )}
         <div className="flex items-center gap-2">
           <Users className="h-4 w-4 text-primary" />
-          <h2 className="text-sm font-semibold">Households ({households.length})</h2>
+          <h2 className="text-sm font-semibold">
+            {t(language, "householdCount")} ({households.length})
+          </h2>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-2 border-b border-border bg-card/50 p-2">
         <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as HouseholdStatus | "all")}>
           <SelectTrigger className="h-8 text-xs">
-            <SelectValue placeholder="Status" />
+            <SelectValue placeholder={t(language, "statusLabel")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All statuses</SelectItem>
-            <SelectItem value="safe">Safe</SelectItem>
-            <SelectItem value="evacuating">Evacuating</SelectItem>
-            <SelectItem value="needs_help">Needs Help</SelectItem>
-            <SelectItem value="no_response">No Response</SelectItem>
+            <SelectItem value="all">{t(language, "allStatuses")}</SelectItem>
+            <SelectItem value="safe">{t(language, "safeStatus")}</SelectItem>
+            <SelectItem value="evacuating">{t(language, "evacuatingStatus")}</SelectItem>
+            <SelectItem value="needs_help">{t(language, "needsHelpStatus")}</SelectItem>
+            <SelectItem value="no_response">{t(language, "noResponseStatus")}</SelectItem>
           </SelectContent>
         </Select>
         <Select value={vulnFilter} onValueChange={(v) => setVulnFilter(v as "all" | "vulnerable")}>
           <SelectTrigger className="h-8 text-xs">
-            <SelectValue placeholder="Vulnerability" />
+            <SelectValue placeholder={t(language, "vulnerability")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All households</SelectItem>
-            <SelectItem value="vulnerable">Vulnerable only</SelectItem>
+            <SelectItem value="all">{t(language, "allHouseholds")}</SelectItem>
+            <SelectItem value="vulnerable">{t(language, "vulnerableOnly")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -130,7 +135,7 @@ export function HouseholdList({
       <div className="flex-1 space-y-2 overflow-y-auto p-2">
         {filtered.length === 0 && (
           <p className="py-8 text-center text-xs text-muted-foreground">
-            No households match the current filters.
+            {t(language, "noHouseholdMatches")}
           </p>
         )}
         {filtered.map((h) => {
@@ -152,24 +157,22 @@ export function HouseholdList({
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <p className="truncate text-sm font-semibold text-foreground">
-                        {h.headOfFamily}
-                      </p>
+                      <p className="truncate text-sm font-semibold text-foreground">{h.headOfFamily}</p>
                       {vuln && (
                         <Badge className="border border-orange-300 bg-orange-100 text-[9px] font-semibold text-orange-700">
                           <AlertCircle className="mr-0.5 h-2.5 w-2.5" />
-                          VULNERABLE
+                          {t(language, "vulnerable")}
                         </Badge>
                       )}
                     </div>
                     <p className="truncate text-xs text-muted-foreground">{h.address}</p>
-                    <p className="mt-0.5 text-[10px] text-muted-foreground">
-                      {h.memberCount} {h.memberCount === 1 ? "member" : "members"}
+                    <p className="mt-0.5 truncate text-[10px] text-muted-foreground">
+                      {h.memberCount} {h.memberCount === 1 ? t(language, "member") : t(language, "members")}
                       {h.phone && ` • ${h.phone}`}
                     </p>
                   </div>
                   <Badge className={`shrink-0 border text-[9px] font-semibold ${statusStyle.className}`}>
-                    {statusStyle.label}
+                    {t(language, statusStyle.key)}
                   </Badge>
                 </div>
 
@@ -192,7 +195,7 @@ export function HouseholdList({
                           key={v}
                           className="rounded-full bg-orange-50 px-1.5 py-0.5 text-[9px] font-medium text-orange-700"
                         >
-                          {VULN_LABEL[v]}
+                          {t(language, VULN_LABEL[v])}
                         </span>
                       ))}
                     </div>

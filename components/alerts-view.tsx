@@ -26,49 +26,148 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Textarea } from "@/components/ui/textarea"
+import { t, type Locale } from "@/lib/i18n"
 
-const triggeringMessages = [
-  {
-    id: 1,
-    sender: "Siti Rahayu",
-    avatar: "SR",
-    time: "14:23",
-    text: '"The river behind the houses is getting higher 😟"',
-    keywords: ["river", "higher"],
-    location: "Block A, RT 05",
-    phone: "+62 812-3456-7890",
-  },
-  {
-    id: 2,
-    sender: "Ahmad Kurniawan",
-    avatar: "AK",
-    time: "14:31",
-    text: '"Water is starting to enter the street in front of our alley 🌊"',
-    keywords: ["water", "enter", "street"],
-    location: "Gang Mawar, RT 05",
-    phone: "+62 813-2345-6789",
-  },
-  {
-    id: 3,
-    sender: "Dewi Marlina",
-    avatar: "DM",
-    time: "14:35",
-    text: '"The drainage near the mosque is overflowing! Kids be careful"',
-    keywords: ["drainage", "overflowing"],
-    location: "Near Masjid Al-Hidayah",
-    phone: "+62 857-8765-4321",
-  },
-  {
-    id: 4,
-    sender: "Rini Wulandari",
-    avatar: "RW",
-    time: "14:38",
-    text: '"Rain is becoming much stronger here, it won\'t stop"',
-    keywords: ["rain", "stronger"],
-    location: "Block C, RT 05",
-    phone: "+62 821-9988-7766",
-  },
-]
+function getTriggeringMessages(language: Locale) {
+  if (language === "id") {
+    return [
+      {
+        id: 1,
+        sender: "Siti Rahayu",
+        avatar: "SR",
+        time: "14:23",
+        text: '"Sungai di belakang rumah semakin naik 😟"',
+        keywords: ["sungai", "naik"],
+        location: "Blok A, RT 05",
+        phone: "+62 812-3456-7890",
+      },
+      {
+        id: 2,
+        sender: "Ahmad Kurniawan",
+        avatar: "AK",
+        time: "14:31",
+        text: '"Air mulai masuk ke jalan di depan gang kami 🌊"',
+        keywords: ["air", "masuk", "jalan"],
+        location: "Gang Mawar, RT 05",
+        phone: "+62 813-2345-6789",
+      },
+      {
+        id: 3,
+        sender: "Dewi Marlina",
+        avatar: "DM",
+        time: "14:35",
+        text: '"Drainase dekat masjid meluap! Anak-anak hati-hati"',
+        keywords: ["drainase", "meluap"],
+        location: "Dekat Masjid Al-Hidayah",
+        phone: "+62 857-8765-4321",
+      },
+      {
+        id: 4,
+        sender: "Rini Wulandari",
+        avatar: "RW",
+        time: "14:38",
+        text: '"Hujan di sini makin deras, belum reda"',
+        keywords: ["hujan", "deras"],
+        location: "Blok C, RT 05",
+        phone: "+62 821-9988-7766",
+      },
+    ]
+  }
+
+  if (language === "su") {
+    return [
+      {
+        id: 1,
+        sender: "Siti Rahayu",
+        avatar: "SR",
+        time: "14:23",
+        text: '"Walungan di tukangeun imah beuki luhur 😟"',
+        keywords: ["walungan", "luhur"],
+        location: "Blok A, RT 05",
+        phone: "+62 812-3456-7890",
+      },
+      {
+        id: 2,
+        sender: "Ahmad Kurniawan",
+        avatar: "AK",
+        time: "14:31",
+        text: '"Cai mimiti asup ka jalan di hareup gang urang 🌊"',
+        keywords: ["cai", "asup", "jalan"],
+        location: "Gang Mawar, RT 05",
+        phone: "+62 813-2345-6789",
+      },
+      {
+        id: 3,
+        sender: "Dewi Marlina",
+        avatar: "DM",
+        time: "14:35",
+        text: '"Drainase deukeut masjid ngabahekeun! Barudak sing ati-ati"',
+        keywords: ["drainase", "ngabahekeun"],
+        location: "Deukeut Masjid Al-Hidayah",
+        phone: "+62 857-8765-4321",
+      },
+      {
+        id: 4,
+        sender: "Rini Wulandari",
+        avatar: "RW",
+        time: "14:38",
+        text: '"Hujan di dieu beuki tarik, tacan eureun"',
+        keywords: ["hujan", "tarik"],
+        location: "Blok C, RT 05",
+        phone: "+62 821-9988-7766",
+      },
+    ]
+  }
+
+  return [
+    {
+      id: 1,
+      sender: "Siti Rahayu",
+      avatar: "SR",
+      time: "14:23",
+      text: '"The river behind the houses is getting higher 😟"',
+      keywords: ["river", "higher"],
+      location: "Block A, RT 05",
+      phone: "+62 812-3456-7890",
+    },
+    {
+      id: 2,
+      sender: "Ahmad Kurniawan",
+      avatar: "AK",
+      time: "14:31",
+      text: '"Water is starting to enter the street in front of our alley 🌊"',
+      keywords: ["water", "enter", "street"],
+      location: "Gang Mawar, RT 05",
+      phone: "+62 813-2345-6789",
+    },
+    {
+      id: 3,
+      sender: "Dewi Marlina",
+      avatar: "DM",
+      time: "14:35",
+      text: '"The drainage near the mosque is overflowing! Kids be careful"',
+      keywords: ["drainage", "overflowing"],
+      location: "Near Masjid Al-Hidayah",
+      phone: "+62 857-8765-4321",
+    },
+    {
+      id: 4,
+      sender: "Rini Wulandari",
+      avatar: "RW",
+      time: "14:38",
+      text: '"Rain is becoming much stronger here, it won\'t stop"',
+      keywords: ["rain", "stronger"],
+      location: "Block C, RT 05",
+      phone: "+62 821-9988-7766",
+    },
+  ]
+}
+
+function getDetectedKeywords(language: Locale) {
+  if (language === "id") return ["sungai naik", "air masuk", "jalan", "drainase", "meluap", "hujan deras"]
+  if (language === "su") return ["walungan luhur", "cai asup", "jalan", "drainase", "ngabahekeun", "hujan tarik"]
+  return ["river rising", "water entering", "street", "drainage", "overflowing", "rain stronger"]
+}
 
 type View = "alert" | "picker" | "chat" | "monitoring" | "emergency"
 
@@ -79,9 +178,7 @@ interface Resident {
   phone: string
 }
 
-// ── Empty chat ────────────────────────────────────────────────────────────────
-
-function EmptyChat({ resident, onBack }: { resident: Resident; onBack: () => void }) {
+function EmptyChat({ resident, onBack, language }: { resident: Resident; onBack: () => void; language: Locale }) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-3 border-b border-border bg-card px-3 py-2.5">
@@ -100,15 +197,15 @@ function EmptyChat({ resident, onBack }: { resident: Resident; onBack: () => voi
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/60">
           <MessageSquare className="h-7 w-7 text-muted-foreground" />
         </div>
-        <p className="text-xs text-gray-500">
-          Start a conversation with <span className="font-semibold">{resident.sender}</span>
+          <p className="text-xs text-gray-500">
+          {t(language, "startConversationWith")} <span className="font-semibold">{resident.sender}</span>
         </p>
         <p className="text-[10px] text-gray-400">{resident.location}</p>
       </div>
       <div className="flex items-center gap-2 border-t border-border bg-card px-3 py-2">
         <button className="text-muted-foreground"><Smile className="h-5 w-5" /></button>
         <div className="flex-1 rounded-full border border-border bg-muted px-4 py-2">
-          <span className="text-xs text-muted-foreground">Message</span>
+          <span className="text-xs text-muted-foreground">{t(language, "message")}</span>
         </div>
         <button className="text-muted-foreground"><Paperclip className="h-5 w-5" /></button>
         <button className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
@@ -119,9 +216,8 @@ function EmptyChat({ resident, onBack }: { resident: Resident; onBack: () => voi
   )
 }
 
-// ── Resident picker ───────────────────────────────────────────────────────────
-
-function ResidentPicker({ onSelect, onBack }: { onSelect: (r: Resident) => void; onBack: () => void }) {
+function ResidentPicker({ onSelect, onBack, language }: { onSelect: (r: Resident) => void; onBack: () => void; language: Locale }) {
+  const triggeringMessages = getTriggeringMessages(language)
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-3 border-b border-border bg-card px-3 py-2.5">
@@ -129,13 +225,13 @@ function ResidentPicker({ onSelect, onBack }: { onSelect: (r: Resident) => void;
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div>
-          <p className="text-sm font-semibold text-foreground">Contact Resident</p>
-          <p className="text-[10px] text-muted-foreground">Select who to contact</p>
+          <p className="text-sm font-semibold text-foreground">{t(language, "contactResident")}</p>
+          <p className="text-[10px] text-muted-foreground">{t(language, "selectWhoToContact")}</p>
         </div>
       </div>
       <div className="flex-1 space-y-2 overflow-y-auto p-3">
         <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-          Residents who reported flood conditions
+          {t(language, "residentsReportedFlood")}
         </p>
         {triggeringMessages.map((msg) => (
           <button
@@ -165,8 +261,6 @@ function ResidentPicker({ onSelect, onBack }: { onSelect: (r: Resident) => void;
     </div>
   )
 }
-
-// ── Enhanced monitoring ───────────────────────────────────────────────────────
 
 function EnhancedMonitoring({ onBack }: { onBack: () => void }) {
   const [phase, setPhase] = useState<"confirm" | "applying" | "active">("confirm")
@@ -278,8 +372,6 @@ function EnhancedMonitoring({ onBack }: { onBack: () => void }) {
     </div>
   )
 }
-
-// ── Emergency channel ─────────────────────────────────────────────────────────
 
 const DEFAULT_EMERGENCY_MSG =
   "⚠️ COMMUNITY ALERT — RT 05/08 Citeureup\n\nMultiple residents have reported rising water levels and flooding signs in the area.\n\nPlease stay alert, move valuables to higher ground, and reply with your status:\nSAFE · EVACUATING · HELP\n\n— Asep (RT Leader)"
@@ -439,17 +531,23 @@ function EmergencyChannel({ onBack }: { onBack: () => void }) {
   )
 }
 
-// ── Main AlertsView ───────────────────────────────────────────────────────────
-
-export function AlertsView() {
+export function AlertsView({ language = "en" }: { language?: Locale }) {
   const [view, setView] = useState<View>("alert")
   const [selectedResident, setSelectedResident] = useState<Resident | null>(null)
+  const triggeringMessages = getTriggeringMessages(language)
+  const detectedKeywords = getDetectedKeywords(language)
 
   if (view === "chat" && selectedResident) {
-    return <EmptyChat resident={selectedResident} onBack={() => setView("picker")} />
+    return <EmptyChat resident={selectedResident} onBack={() => setView("picker")} language={language} />
   }
   if (view === "picker") {
-    return <ResidentPicker onBack={() => setView("alert")} onSelect={(r) => { setSelectedResident(r); setView("chat") }} />
+    return (
+      <ResidentPicker
+        onBack={() => setView("alert")}
+        onSelect={(r) => { setSelectedResident(r); setView("chat") }}
+        language={language}
+      />
+    )
   }
   if (view === "monitoring") {
     return <EnhancedMonitoring onBack={() => setView("alert")} />
@@ -470,18 +568,22 @@ export function AlertsView() {
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="text-base font-bold text-white">Community Risk Alert</p>
-                  <Badge className="bg-white/20 text-white text-[10px] font-bold">HIGH PRIORITY</Badge>
+                  <p className="text-base font-bold text-white">{t(language, "communityRiskAlert")}</p>
+                  <Badge className="bg-white/20 text-white text-[10px] font-bold">{t(language, "highPriority")}</Badge>
                 </div>
                 <p className="mt-0.5 text-xs text-white/80">
-                  4 residents reported flood-related conditions in the last 15 minutes
+                  {language === "id"
+                    ? `4 warga melaporkan kondisi terkait banjir dalam 17 menit terakhir`
+                    : language === "su"
+                    ? `4 warga ngalaporkeun kaayaan patali banjir dina 17 menit panungtungan`
+                    : `4 residents reported flood-related conditions in the last 17 minutes`}
                 </p>
               </div>
             </div>
             <div className="mt-3 flex items-center gap-2 rounded-lg bg-white/15 px-3 py-2">
               <TrendingUp className="h-4 w-4 text-white" />
               <p className="text-xs text-white">
-                Priority automatically escalated — multiple reports in short window
+                {t(language, "priorityAutomaticallyEscalated")}
               </p>
             </div>
           </CardContent>
@@ -492,19 +594,19 @@ export function AlertsView() {
           <Card className="border-border">
             <CardContent className="p-2.5 text-center">
               <p className="text-lg font-bold text-orange-600">4</p>
-              <p className="text-[10px] text-muted-foreground">Messages flagged</p>
+              <p className="text-[10px] text-muted-foreground">{t(language, "messagesFlagged")}</p>
             </CardContent>
           </Card>
           <Card className="border-border">
             <CardContent className="p-2.5 text-center">
-              <p className="text-lg font-bold text-orange-600">15m</p>
-              <p className="text-[10px] text-muted-foreground">Time window</p>
+              <p className="text-lg font-bold text-orange-600">17m</p>
+              <p className="text-[10px] text-muted-foreground">{t(language, "timeWindow")}</p>
             </CardContent>
           </Card>
           <Card className="border-border">
             <CardContent className="p-2.5 text-center">
-              <p className="text-lg font-bold text-orange-600">9</p>
-              <p className="text-[10px] text-muted-foreground">Keywords hit</p>
+              <p className="text-lg font-bold text-orange-600">8</p>
+              <p className="text-[10px] text-muted-foreground">{t(language, "keywordsHit")}</p>
             </CardContent>
           </Card>
         </div>
@@ -512,10 +614,13 @@ export function AlertsView() {
         {/* Detected keywords */}
         <Card className="border-border">
           <CardContent className="p-3">
-            <p className="mb-2 text-xs font-semibold text-foreground">Flood-related keywords detected</p>
+            <p className="mb-2 text-xs font-semibold text-foreground">{t(language, "floodKeywordsDetected")}</p>
             <div className="flex flex-wrap gap-1.5">
-              {["river rising", "water entering", "street", "drainage", "overflowing", "rain stronger"].map((kw) => (
-                <span key={kw} className="rounded-full border border-orange-300 bg-orange-50 px-2.5 py-0.5 text-[10px] font-medium text-orange-700">
+              {detectedKeywords.map((kw) => (
+                <span
+                  key={kw}
+                  className="rounded-full border border-orange-300 bg-orange-50 px-2.5 py-0.5 text-[10px] font-medium text-orange-700"
+                >
                   {kw}
                 </span>
               ))}
@@ -525,7 +630,7 @@ export function AlertsView() {
 
         {/* Triggering messages */}
         <div>
-          <p className="mb-2 text-xs font-semibold text-foreground">Triggering messages</p>
+          <p className="mb-2 text-xs font-semibold text-foreground">{t(language, "triggeringMessages")}</p>
           <div className="space-y-2">
             {triggeringMessages.map((msg) => (
               <Card key={msg.id} className="border-orange-200 bg-orange-50/60">

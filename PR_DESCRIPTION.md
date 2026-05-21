@@ -5,7 +5,7 @@
 Implements **Scenario 1 — RT Leader Coordinates Flood Response** end-to-end as a prototype, using mock data only (no backend).
 
 ### Data layer (`lib/mock-data.ts`)
-- Completed the 20-household roster for Citeureup Village RT 05 with the channel mix from the plan (~12 WA+SMS, 4 SMS-only, 3 mosque+door, 3 door-only, 6 with vulnerability flags).
+- Expanded to 35-household roster for Citeureup Village RT 05 (~141 total members, 14 with vulnerability flags) to represent realistic population density.
 - Implemented the four planned helpers: `getChannelLabel`, `isVulnerable`, `getStatusCounts`, `getNonResponsive`, plus an extra `getChannelBreakdown` consumed by the broadcast dialog.
 
 ### Household dashboard (`components/household-list.tsx`)
@@ -48,14 +48,14 @@ pnpm dev
 
 Open the app and walk through the scenario:
 
-1. **Receive the alert** — On home, tap **Alert Details** (or **Broadcast Warning**). A full-screen orange `SIAGA` banner shows severity, predicted level (2.3m), affected count (20), area, recommendation, and 3 shelter locations.
+1. **Receive the alert** — On home, tap **Alert Details** (or **Broadcast Warning**). A full-screen orange `SIAGA` banner shows severity, predicted level (2.3m), affected count (35), area, recommendation, and 3 shelter locations.
 2. **Review & edit** — Tap **Review & Broadcast**. A dialog opens with a pre-filled message, channel breakdown (WA / SMS / Mosque / Door), and total recipient count. Edit the message to confirm it's editable.
 3. **Send** — Tap **Send Emergency Broadcast**. Watch per-channel progress bars run, then **Broadcast Complete** with a **View Response Tracking** button.
 4. **Live tracking** — Home now shows a **Response Progress** card with a climbing progress bar and live SAFE / EVACUATING / NEEDS HELP / NO RESPONSE counts (updates every ~1.5s).
 5. **Non-response timeout** — Wait ~60s. A red warning card appears: *"X households have not responded"* with **View list** and **Plan route** shortcuts.
 6. **Household list** — Tap **View list** (or the Households quick-action). Check that:
-   - 20 households render with channel icons + status chips.
-   - 6 households show the orange **VULNERABLE** badge.
+   - 35 households render with channel icons + status chips.
+   - 14 households show the orange **VULNERABLE** badge.
    - Non-responders are pinned to the top with a red highlight.
    - Filtering by status and by vulnerability narrows the list correctly.
 7. **Door-to-door route** — Tap **Plan route**. Confirm:
@@ -69,7 +69,7 @@ Open the app and walk through the scenario:
 | Check | How |
 |---|---|
 | Typechecks clean | `npx tsc --noEmit` |
-| Household count | List header reads "Households (20)" |
+| Household count | List header reads "Households (35)" |
 | Channel mix | Broadcast dialog summary shows roughly 12 WA / 16 SMS / 3 Mosque / 3 Door |
 | Vulnerable-first ordering | First entries in Route Planner all show **PRIORITY** |
 
