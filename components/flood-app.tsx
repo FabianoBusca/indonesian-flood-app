@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   AlertTriangle,
   Droplets,
@@ -37,6 +37,7 @@ import { ResponseTracker } from "@/components/response-tracker"
 import { RoutePlanner } from "@/components/route-planner"
 import { useSimulation } from "@/hooks/use-simulation"
 import { getNonResponsive, getStatusCounts, mockBPBDAlert } from "@/lib/mock-data"
+import { t } from "@/lib/i18n"
 
 const languages = [
   { code: "en", label: "English" },
@@ -84,10 +85,10 @@ export function FloodApp() {
 
   const getAlertText = (level: string) => {
     switch (level) {
-      case "DANGER": return "BAHAYA - Evacuate Immediately"
-      case "WARNING": return "SIAGA - Flood Warning Active"
-      case "WATCH": return "WASPADA - Monitor Conditions"
-      default: return "AMAN - No Current Alerts"
+      case "DANGER": return t(language as any, "alertDanger")
+      case "WARNING": return t(language as any, "alertWarning")
+      case "WATCH": return t(language as any, "alertWatch")
+      default: return t(language as any, "alertSafe")
     }
   }
 
@@ -98,6 +99,15 @@ export function FloodApp() {
       setAlertOpen(true)
     }
   }
+
+  useEffect(() => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('lang') : null
+    if (saved && languages.find((l) => l.code === saved)) setLanguage(saved)
+  }, [])
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') localStorage.setItem('lang', language)
+  }, [language])
 
   const handleReviewAlert = () => {
     setAlertOpen(false)
@@ -219,14 +229,14 @@ export function FloodApp() {
               {/* Alert Status Banner */}
               <Card className={`border-0 ${getAlertColor(alertLevel)}`}>
                 <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col items-center gap-3 text-center">
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/20">
                       <AlertTriangle className="h-7 w-7 text-white" />
                     </div>
                     <div className="flex-1">
                       <p className="text-lg font-bold text-white">{getAlertText(alertLevel)}</p>
                       <p className="text-sm text-white/80">
-                        {broadcastSent ? "Broadcast sent — tracking responses" : "Last updated: 5 min ago"}
+                        {broadcastSent ? t(language as any, 'broadcastSent') : t(language as any, 'lastUpdated')}
                       </p>
                     </div>
                   </div>
@@ -236,23 +246,23 @@ export function FloodApp() {
               {/* Risk Summary */}
               <div className="grid grid-cols-2 gap-2">
                 <Card className="border-border">
-                  <CardContent className="p-3">
-                    <div className="flex items-center gap-2">
+                  <CardContent className="p-3 text-center">
+                    <div className="flex items-center justify-center gap-2">
                       <Gauge className="h-5 w-5 text-primary" />
-                      <span className="text-xs text-muted-foreground">Water Level</span>
+                      <span className="text-xs text-muted-foreground">{t(language as any, 'waterLevel')}</span>
                     </div>
                     <p className="mt-1 text-xl font-bold text-foreground">{waterLevel}m</p>
-                    <p className="text-xs text-orange-600">Above normal</p>
+                    <p className="text-xs text-orange-600">{t(language as any, 'aboveNormal')}</p>
                   </CardContent>
                 </Card>
                 <Card className="border-border">
-                  <CardContent className="p-3">
-                    <div className="flex items-center gap-2">
+                  <CardContent className="p-3 text-center">
+                    <div className="flex items-center justify-center gap-2">
                       <CloudRain className="h-5 w-5 text-primary" />
-                      <span className="text-xs text-muted-foreground">Rainfall Risk</span>
+                      <span className="text-xs text-muted-foreground">{t(language as any, 'rainfallRisk')}</span>
                     </div>
                     <p className="mt-1 text-xl font-bold text-foreground">{rainfallRisk}</p>
-                    <p className="text-xs text-orange-600">Heavy rain expected</p>
+                    <p className="text-xs text-orange-600">{t(language as any, 'heavyRain')}</p>
                   </CardContent>
                 </Card>
               </div>
@@ -268,32 +278,30 @@ export function FloodApp() {
                 />
               ) : (
                 <Card className="border-border">
-                  <CardContent className="p-3">
-                    <div className="mb-3 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Users className="h-5 w-5 text-primary" />
-                        <span className="text-sm font-semibold text-foreground">Household Status</span>
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        {affectedHouseholds}/{totalHouseholds} affected
-                      </span>
+                  <CardContent className="p-3 text-center">
+                    <div className="mb-3 flex items-center justify-center gap-2">
+                      <Users className="h-5 w-5 text-primary" />
+                      <span className="text-sm font-semibold text-foreground">Household Status</span>
                     </div>
+                    <p className="mb-3 text-xs text-muted-foreground">
+                      {affectedHouseholds}/{totalHouseholds} {t(language as any, 'affectedSuffix')}
+                    </p>
                     <div className="grid grid-cols-4 gap-2">
-                      <div className="rounded-lg bg-green-50 p-2 text-center">
+                      <div className="rounded-lg bg-green-50 p-2 flex flex-col items-center justify-center text-center min-h-20">
                         <p className="text-lg font-bold text-green-700">{counts.safe}</p>
-                        <p className="text-[10px] font-medium text-green-600">SAFE</p>
+                        <p className="text-[10px] font-medium text-green-600">{t(language as any, 'safe')}</p>
                       </div>
-                      <div className="rounded-lg bg-yellow-50 p-2 text-center">
+                      <div className="rounded-lg bg-yellow-50 p-2 flex flex-col items-center justify-center text-center min-h-20">
                         <p className="text-lg font-bold text-yellow-700">{counts.evacuating}</p>
-                        <p className="text-[10px] font-medium text-yellow-600">EVACUATING</p>
+                        <p className="text-[10px] font-medium text-yellow-600">{t(language as any, 'evacuating')}</p>
                       </div>
-                      <div className="rounded-lg bg-red-50 p-2 text-center">
+                      <div className="rounded-lg bg-red-50 p-2 flex flex-col items-center justify-center text-center min-h-20">
                         <p className="text-lg font-bold text-red-700">{counts.needs_help}</p>
-                        <p className="text-[10px] font-medium text-red-600">NEEDS HELP</p>
+                        <p className="text-[10px] font-medium text-red-600">{t(language as any, 'needsHelp')}</p>
                       </div>
-                      <div className="rounded-lg bg-gray-100 p-2 text-center">
+                      <div className="rounded-lg bg-gray-100 p-2 flex flex-col items-center justify-center text-center min-h-20">
                         <p className="text-lg font-bold text-gray-700">{counts.no_response}</p>
-                        <p className="text-[10px] font-medium text-gray-600">NO RESPONSE</p>
+                        <p className="text-[10px] font-medium text-gray-600">{t(language as any, 'noResponse')}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -303,11 +311,11 @@ export function FloodApp() {
               {/* Broadcast Warning Button */}
               <Button
                 onClick={handleBroadcastClick}
-                className="h-14 w-full gap-3 bg-primary text-lg font-bold text-primary-foreground shadow-lg hover:bg-primary/90"
+                className="h-14 w-full gap-3 bg-primary text-lg font-bold text-primary-foreground shadow-lg hover:bg-primary/90 flex items-center justify-center"
                 size="lg"
               >
                 <Radio className="h-6 w-6" />
-                {broadcastSent ? "Broadcast Again" : "Broadcast Warning"}
+                {broadcastSent ? t(language as any, 'broadcastAgain') : t(language as any, 'broadcastWarning')}
               </Button>
 
               {/* Quick Actions */}
@@ -316,30 +324,28 @@ export function FloodApp() {
                   className="cursor-pointer border-border transition-colors hover:border-primary/50"
                   onClick={() => setAlertOpen(true)}
                 >
-                  <CardContent className="flex items-center gap-3 p-3">
+                  <CardContent className="flex flex-col items-center gap-3 p-3 text-center">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
                       <FileText className="h-5 w-5 text-primary" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-foreground">Alert Details</p>
-                      <p className="text-xs text-muted-foreground">View BPBD info</p>
+                      <p className="text-sm font-medium text-foreground">{t(language as any, 'alertDetails')}</p>
+                      <p className="text-xs text-muted-foreground">{t(language as any, 'viewBPBD')}</p>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   </CardContent>
                 </Card>
                 <Card
                   className="cursor-pointer border-border transition-colors hover:border-primary/50"
                   onClick={() => setScreen("households")}
                 >
-                  <CardContent className="flex items-center gap-3 p-3">
+                  <CardContent className="flex flex-col items-center gap-3 p-3 text-center">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
                       <Users className="h-5 w-5 text-primary" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-foreground">Households</p>
-                      <p className="text-xs text-muted-foreground">Manage follow-up</p>
+                      <p className="text-sm font-medium text-foreground">{t(language as any, 'households')}</p>
+                      <p className="text-xs text-muted-foreground">{t(language as any, 'manageFollowUp')}</p>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   </CardContent>
                 </Card>
               </div>
@@ -349,17 +355,14 @@ export function FloodApp() {
                   className="cursor-pointer border-border transition-colors hover:border-primary/50"
                   onClick={() => setScreen("route")}
                 >
-                  <CardContent className="flex items-center gap-3 p-3">
+                  <CardContent className="flex flex-col items-center gap-3 p-3 text-center">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-100">
                       <Footprints className="h-5 w-5 text-orange-600" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-foreground">Door-to-Door Route</p>
-                      <p className="text-xs text-muted-foreground">
-                        Prioritized check for non-responders
-                      </p>
+                      <p className="text-sm font-medium text-foreground">{t(language as any, 'doorToDoor')}</p>
+                      <p className="text-xs text-muted-foreground">{t(language as any, 'prioritizedCheck')}</p>
                     </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   </CardContent>
                 </Card>
               )}
@@ -372,10 +375,10 @@ export function FloodApp() {
       <nav className="border-t border-border bg-card px-2 pb-4 pt-2">
         <div className="flex items-center justify-around">
           {[
-            { id: "home", icon: Home, label: "Home" },
-            { id: "alerts", icon: Bell, label: "Alerts", badge: true },
-            { id: "community", icon: MessageSquare, label: "Community" },
-            { id: "settings", icon: Settings, label: "Settings" },
+            { id: "home", icon: Home, label: t(language as any, 'navHome') },
+            { id: "alerts", icon: Bell, label: t(language as any, 'navAlerts'), badge: true },
+            { id: "community", icon: MessageSquare, label: t(language as any, 'navCommunity') },
+            { id: "settings", icon: Settings, label: t(language as any, 'navSettings') },
           ].map((item) => (
             <button
               key={item.id}
