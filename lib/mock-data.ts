@@ -419,7 +419,7 @@ export const mockBPBDAlert: BPBDAlert = {
   description:
     "Heavy rainfall upstream has caused river water levels to rise rapidly. " +
     "Flooding is expected in low-lying areas within the next 1–2 hours.",
-  affectedArea: "RT 05/08, Citeureup Village, Cibinong District",
+  affectedArea: "RT 05/08, Citeureup Village, Bandung Regency",
   predictedFloodLevel: 2.3,
   evacuationRecommendation:
     "Residents in flood-prone zones should prepare to evacuate to the nearest shelter. " +
